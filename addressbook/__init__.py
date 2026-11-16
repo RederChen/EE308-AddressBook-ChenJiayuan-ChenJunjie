@@ -1,4 +1,5 @@
 """Flask 应用工厂：配置、数据库初始化、蓝图注册与统一错误处理。"""
+import os
 from pathlib import Path
 
 from flask import Flask, jsonify, request
@@ -20,7 +21,7 @@ HTTP_MESSAGES = {
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        DATABASE=str(Path(app.instance_path) / "addressbook.db"),
+        DATABASE=os.environ.get("ADDRESS_BOOK_DATABASE", str(Path(app.instance_path) / "addressbook.db")),
         MAX_CONTENT_LENGTH=DEFAULT_MAX_UPLOAD,
     )
     if test_config:

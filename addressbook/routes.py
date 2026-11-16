@@ -48,7 +48,7 @@ def health():
     return jsonify({
         "status": "ok",
         "application": "拾光通讯录",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "stats": repository.stats(),
     })
 
@@ -211,6 +211,10 @@ def _read_upload():
 
 @bp.post("/api/contacts/import/preview")
 def preview_import():
+    try:
+        mode = validate_mode(request.form.get("mode"))
+    except ValidationError as exc:
+        return _error(str(exc))
     parsed, failure = _read_upload()
     if failure is not None:
         return failure
@@ -219,7 +223,7 @@ def preview_import():
         return _error("文件存在错误，请修正后再导入", details=errors)
     if not records:
         return _error("工作簿中没有可导入的联系人")
-    preview = repository.preview_import(records)
+    preview = repository.preview_import(records, mode)
     preview["errors"] = []
     return jsonify(preview)
 

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="支持收藏、多联系方式、Excel 导入导出与回收站的极限编程通讯录作业">
   <title>拾光通讯录 · 让每一次联系都有迹可循</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -57,7 +58,7 @@
         <span class="note-dot"></span>
         <p>把重要的人，<br>安放在触手可及的地方。</p>
       </div>
-      <footer class="sidebar-footer">XP 地址簿 · v1.2.0</footer>
+      <footer class="sidebar-footer">拾光通讯录 · v1.3.0</footer>
     </aside>
 
     <main class="main-content">
@@ -153,13 +154,13 @@
           <label><input type="radio" name="import-mode" value="skip" checked><span>跳过同名（推荐，不修改现有数据）</span></label>
           <label><input type="radio" name="import-mode" value="overwrite"><span>覆盖同名（用文件内容替换其联系方式与备注）</span></label>
         </fieldset>
-        <div class="import-rules"><strong>导入说明</strong><ul><li>姓名必填，多个同类号码用中文分号“；”分隔。</li><li>建议先点“预览”确认新增/覆盖/跳过的数量。</li><li>任一行存在错误时整批取消，避免不完整导入。</li></ul></div>
+        <div class="import-rules"><strong>导入说明</strong><ul><li>姓名必填，多个同类号码用中文分号“；”分隔。</li><li>请先点“预览”确认新增/覆盖/跳过的数量。</li><li>任一行存在错误时整批取消，避免不完整导入。</li></ul></div>
         <div class="import-preview" id="import-preview" hidden></div>
       </div>
       <div class="modal-footer">
         <button class="button button-secondary" type="button" id="preview-import-button">预览</button>
         <button class="button button-secondary" type="button" data-close="import-dialog">取消</button>
-        <button class="button button-primary" id="confirm-import-button" type="submit"><svg><use href="#i-upload"/></svg>开始导入</button>
+        <button class="button button-primary" id="confirm-import-button" type="submit" disabled><svg><use href="#i-upload"/></svg>开始导入</button>
       </div>
     </form>
   </dialog>

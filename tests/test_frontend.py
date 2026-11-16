@@ -62,9 +62,9 @@ def test_template_ids_are_unique_and_dialogs_are_present():
     assert html.count("</dialog>") == 2
 
 
-def test_page_exposes_v12_features():
+def test_page_exposes_current_features():
     html = markup()
-    for text in ("回收站", "批量管理", "排序", "导入", "导出当前列表", "v1.2.0", "拾光通讯录"):
+    for text in ("回收站", "批量管理", "排序", "导入", "导出当前列表", "v1.3.0", "拾光通讯录"):
         assert text in html, text
     assert 'name="import-mode"' in html
     assert 'id="sort-select"' in html
@@ -89,7 +89,7 @@ def test_frontend_only_calls_known_api_paths(client):
             raise AssertionError(f"前端调用了不存在的接口：{path}（来自 {raw}）")
 
 
-def test_stylesheet_has_v12_components():
+def test_stylesheet_has_current_components():
     css = STYLES.read_text(encoding="utf-8")
     for selector in (".bulk-bar", ".card-check", ".copy-button", ".import-preview", ".list-footer", ".sort-box"):
         assert selector in css, selector

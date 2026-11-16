@@ -14,7 +14,7 @@ def test_page_and_health(client):
     health = client.get("/api/health").get_json()
     assert health["status"] == "ok"
     assert health["application"] == "拾光通讯录"
-    assert health["version"] == "1.2.0"
+    assert health["version"] == "1.3.0"
     assert health["stats"] == {"total": 0, "favorites": 0, "methods": 0, "trash": 0}
 
 
