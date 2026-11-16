@@ -102,19 +102,4 @@ docker build -t xp-address-book .
 docker run --rm -p 5000:5000 -v xp_address_book_data:/app/instance xp-address-book
 ```
 
-云平台可选择支持 Docker 的华为云、阿里云等容器服务。部署后必须配置持久卷、HTTPS 与公网访问控制，并使用生产级 WSGI 服务；Flask 内置服务器仅用于本地演示。只有实际可公开访问的 URL 才能申报加分，`localhost` 或 `127.0.0.1` 不属于云部署。
-
-## 文档导航
-
-- [要求追踪矩阵](docs/requirements-traceability.md)
-- [架构与实现设计](docs/design.md)
-- [代码规范与 Git 协作约定](docs/code-standards.md)
-- [分工、贡献比例与问题解决](docs/collaboration.md)
-- [两名成员 PSP 表](docs/psp.md)
-- [测试报告](docs/test-report.md)
-- [完整演示视频脚本](docs/demo-script.md)
-- [个人 CSDN 博客 Markdown 模板](docs/blog.md)
-
-## 提交前必须补充
-
-团队名称、两位成员真实姓名/学号、真实分工与贡献比例、各自 PSP 实际工时、GitHub 团队仓库与代码规范 URL、至少三次提交的截图与人数统计、PR、Release、程序截图、完整演示视频、每位成员的个人 CSDN 博客链接。可选云部署还需公网 URL。所有 `待填写`/`待插入` 标记必须在提交前处理。
+云平台可选择支持 Docker 的华为云、阿里云等容器服务。部署后必须配置持久卷、HTTPS 与公网访问控制，并使用生产级 WSGI 服务；Flask 内置服务器仅用于本地演示。
