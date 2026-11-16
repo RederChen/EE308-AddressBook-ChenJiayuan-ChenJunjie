@@ -1,3 +1,5 @@
+import os
+
 from addressbook import create_app
 
 
@@ -5,4 +7,7 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    host = os.environ.get("ADDRESS_BOOK_HOST", "127.0.0.1")
+    port = int(os.environ.get("ADDRESS_BOOK_PORT", "5000"))
+    print(f"拾光通讯录 v1.2.0 已启动：http://{host}:{port}  （Ctrl+C 停止）")
+    app.run(host=host, port=port, debug=False)
