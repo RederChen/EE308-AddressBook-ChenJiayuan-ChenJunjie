@@ -524,6 +524,16 @@ async function saveContact(event) {
 /* ---------------------------------------------------------------- 导入框 */
 
 let previewData = null;
+let previewFile = null;
+let previewMode = null;
+
+function clearImportPreview() {
+  previewData = null;
+  previewFile = null;
+  previewMode = null;
+  $("#import-preview").hidden = true;
+  $("#confirm-import-button").disabled = true;
+}
 
 function selectedMode() {
   const checked = document.querySelector('input[name="import-mode"]:checked');
@@ -532,17 +542,15 @@ function selectedMode() {
 
 function renderPreview(data) {
   const box = $("#import-preview");
-  const skipText = selectedMode() === "overwrite"
-    ? `已存在 ${data.update} 位（导入时将覆盖）`
-    : `已存在 ${data.update} 位（导入时将跳过）`;
   const names = (list, label) => list.length ? `<li>${label}示例：${list.map(escapeHTML).join("、")}</li>` : "";
   box.innerHTML = `<strong>预览结果：共 ${data.total} 位联系人</strong>
     <ul>
       <li>新增 ${data.create} 位</li>
-      <li>${skipText}</li>
-      <li>文件内重复 ${data.skip} 位</li>
+      <li>覆盖 ${data.update} 位</li>
+      <li>跳过 ${data.skip} 位</li>
       ${names(data.created_names || [], "新增")}
-      ${names(data.updated_names || [], "已存在")}
+      ${names(data.updated_names || [], "覆盖")}
+      ${names(data.skipped_names || [], "跳过")}
     </ul>
     <p>确认无误后点击“开始导入”。</p>`;
   box.hidden = false;
@@ -556,14 +564,21 @@ async function previewImport() {
   }
   const button = $("#preview-import-button");
   button.disabled = true;
+  clearImportPreview();
+  const mode = selectedMode();
   try {
     const form = new FormData();
     form.append("file", file);
-    previewData = await api("/api/contacts/import/preview", { method: "POST", body: form });
+    form.append("mode", mode);
+    const result = await api("/api/contacts/import/preview", { method: "POST", body: form });
+    if (file !== $("#excel-file").files[0] || mode !== selectedMode()) return;
+    previewData = result;
+    previewFile = file;
+    previewMode = mode;
     renderPreview(previewData);
+    $("#confirm-import-button").disabled = false;
   } catch (error) {
-    previewData = null;
-    $("#import-preview").hidden = true;
+    clearImportPreview();
     toast(messageOf(error), true);
   } finally {
     button.disabled = false;
@@ -577,6 +592,10 @@ async function importExcel(event) {
     toast("请先选择要导入的 Excel 文件", true);
     return;
   }
+  if (!previewData || file !== previewFile || selectedMode() !== previewMode) {
+    toast("请先预览当前文件及导入方式", true);
+    return;
+  }
   const button = $("#confirm-import-button");
   button.disabled = true;
   try {
@@ -586,18 +605,17 @@ async function importExcel(event) {
     const data = await api("/api/contacts/import", { method: "POST", body: form });
     const parts = [`成功导入 ${data.imported} 位`];
     if (data.updated) parts.push(`覆盖 ${data.updated} 位`);
-    if (data.skipped.length) parts.push(`跳过 ${data.skipped.length} 位同名联系人`);
+    if (data.skipped_count) parts.push(`跳过 ${data.skipped_count} 位同名联系人`);
     toast(parts.join("，"));
     $("#import-dialog").close();
     $("#import-form").reset();
     $("#file-label").textContent = "点击选择 Excel 文件";
-    $("#import-preview").hidden = true;
-    previewData = null;
+    clearImportPreview();
     await loadContacts();
   } catch (error) {
     toast(messageOf(error), true);
   } finally {
-    button.disabled = false;
+    button.disabled = !previewData;
   }
 }
 
@@ -640,7 +658,12 @@ function bindEvents() {
   $("#add-method-button").addEventListener("click", () => addMethodRow());
   $("#contact-form").addEventListener("submit", saveContact);
   $("#import-form").addEventListener("submit", importExcel);
-  $("#import-button").addEventListener("click", () => $("#import-dialog").showModal());
+  $("#import-button").addEventListener("click", () => {
+    $("#import-form").reset();
+    $("#file-label").textContent = "点击选择 Excel 文件";
+    clearImportPreview();
+    $("#import-dialog").showModal();
+  });
   $("#preview-import-button").addEventListener("click", previewImport);
   $("#empty-trash-button").addEventListener("click", emptyTrash);
   $("#bulk-toggle-button").addEventListener("click", () => toggleBulkMode());
@@ -656,11 +679,10 @@ function bindEvents() {
   $("#excel-file").addEventListener("change", (event) => {
     const file = event.target.files[0];
     $("#file-label").textContent = file ? file.name : "点击选择 Excel 文件";
-    $("#import-preview").hidden = true;
-    previewData = null;
+    clearImportPreview();
   });
   $$('input[name="import-mode"]').forEach((input) => input.addEventListener("change", () => {
-    if (previewData) renderPreview(previewData);
+    clearImportPreview();
   }));
   $("#select-all").addEventListener("change", (event) => toggleSelectAll(event.target.checked));
   $$("[data-bulk]").forEach((button) => button.addEventListener("click", () => runBulk(button.dataset.bulk)));

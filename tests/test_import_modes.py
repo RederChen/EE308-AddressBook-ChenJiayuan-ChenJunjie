@@ -14,14 +14,42 @@ def test_preview_counts_without_writing(client, contact_payload):
     response = upload(client, workbook_stream(ROWS), endpoint="/api/contacts/import/preview")
     assert response.status_code == 200, response.get_data(as_text=True)
     preview = response.get_json()
+    assert preview["mode"] == "skip"
     assert preview["total"] == 2
     assert preview["create"] == 1
-    assert preview["update"] == 1
-    assert preview["skip"] == 0
+    assert preview["update"] == 0
+    assert preview["skip"] == 1
     assert preview["created_names"] == ["新同事"]
-    assert preview["updated_names"] == ["林小满"]
+    assert preview["skipped_names"] == ["林小满"]
     assert preview["errors"] == []
     assert client.get("/api/contacts").get_json()["stats"]["total"] == 1
+
+
+def test_preview_overwrite_matches_actual_counts(client, contact_payload):
+    client.post("/api/contacts", json=contact_payload)
+    preview = upload(client, workbook_stream(ROWS), mode="overwrite",
+                     endpoint="/api/contacts/import/preview").get_json()
+    assert (preview["create"], preview["update"], preview["skip"]) == (1, 1, 0)
+    result = upload(client, workbook_stream(ROWS), mode="overwrite").get_json()
+    assert (result["imported"], result["updated"], result["skipped_count"]) == (1, 1, 0)
+
+
+def test_preview_duplicate_rows_match_both_modes(client):
+    rows = [
+        ["同名人", "否", "13800000000"],
+        ["同名人", "否", "13900000000"],
+    ]
+    for mode, counts in [("skip", (1, 0, 1)), ("overwrite", (1, 1, 0))]:
+        preview = upload(client, workbook_stream(rows), mode=mode,
+                         endpoint="/api/contacts/import/preview").get_json()
+        assert (preview["create"], preview["update"], preview["skip"]) == counts
+        assert client.get("/api/contacts").get_json()["total"] == 0
+
+
+def test_preview_rejects_invalid_mode(client):
+    response = upload(client, workbook_stream(ROWS), mode="invalid",
+                      endpoint="/api/contacts/import/preview")
+    assert response.status_code == 400
 
 
 def test_preview_reports_row_errors(client):
@@ -45,6 +73,7 @@ def test_default_mode_skips_existing_contacts(client, contact_payload):
     assert result["imported"] == 1
     assert result["updated"] == 0
     assert result["skipped"] == ["林小满"]
+    assert result["skipped_count"] == 1
 
     contact = client.get(f"/api/contacts/{created['id']}").get_json()
     assert contact["notes"] == "项目组同学"

@@ -273,23 +273,29 @@ def _existing_names(db, names):
     return lookup
 
 
-def preview_import(records):
-    """导入预检：不写库，返回新增/已存在/文件内重复的数量与姓名样例。"""
+def _import_decision(key, known, seen, mode):
+    """预检和正式导入共用同一套逐行规则。"""
+    if mode == "skip" and (key in seen or key in known):
+        return "skip"
+    return "update" if key in known else "create"
+
+
+def preview_import(records, mode="skip"):
+    """按所选模式模拟整批导入，不写数据库。"""
     db = get_db()
     names = {record["name"] for record in records}
-    existing = _existing_names(db, names)
+    known = _existing_names(db, names)
     created, updated, skipped = [], [], []
     seen = set()
     for record in records:
         key = record["name"].casefold()
-        if key in seen:
-            skipped.append(record["name"])
-        elif key in existing:
-            updated.append(record["name"])
-        else:
-            created.append(record["name"])
+        decision = _import_decision(key, known, seen, mode)
+        {"create": created, "update": updated, "skip": skipped}[decision].append(record["name"])
+        if decision == "create":
+            known[key] = None  # 预检中的临时记录；再次出现会被判定为已存在
         seen.add(key)
     return {
+        "mode": mode,
         "total": len(records),
         "create": len(created),
         "update": len(updated),
@@ -312,17 +318,14 @@ def import_contacts(records, mode="skip"):
         seen = set()
         for record in records:
             key = record["name"].casefold()
-            duplicate_in_file = key in seen
+            decision = _import_decision(key, existing, seen, mode)
             seen.add(key)
-            if duplicate_in_file and mode != "overwrite":
+            if decision == "skip":
                 skipped.append(record["name"])
                 continue
             contact_id = existing.get(key)
-            if contact_id is not None and mode == "skip":
-                skipped.append(record["name"])
-                continue
             methods = record.get("methods", [])
-            if contact_id is not None:
+            if decision == "update":
                 db.execute("DELETE FROM contact_methods WHERE contact_id = ?", (contact_id,))
                 db.execute(
                     "UPDATE contacts SET name = ?, favorite = ?, notes = ?, "
@@ -344,4 +347,5 @@ def import_contacts(records, mode="skip"):
     except sqlite3.Error:
         db.rollback()
         raise
-    return {"imported": imported, "updated": updated, "skipped": skipped[:50]}
+    return {"imported": imported, "updated": updated,
+            "skipped_count": len(skipped), "skipped": skipped[:50]}
