@@ -47,12 +47,7 @@ def close_db(_error=None):
 
 
 def init_db():
-    db = get_db()
-    db.executescript(SCHEMA)
-    columns = {row["name"] for row in db.execute("PRAGMA table_info(contact_methods)")}
-    if "label" not in columns:
-        db.execute("ALTER TABLE contact_methods ADD COLUMN label TEXT NOT NULL DEFAULT ''")
-        db.commit()
+    get_db().executescript(SCHEMA)
 
 
 def init_app(app):
