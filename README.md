@@ -91,7 +91,6 @@ addressbook/
 seed_demo.py                   虚构演示数据
 sample_data/                   示例工作簿
 tests/                         pytest 自动化测试
-docs/                          设计、规范、PSP、博客等
 Dockerfile                     可选云部署镜像
 ```
 
