@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, render_template, request, send_file
+from flask import Blueprint, current_app, jsonify, render_template, request, send_file
 
 from . import repository
 from .excel import export_workbook, parse_workbook, template_workbook
@@ -11,7 +11,7 @@ bp = Blueprint("addressbook", __name__)
 def _json_payload():
     payload = request.get_json(silent=True)
     if payload is None:
-        raise ValueError("Please send a valid JSON request")
+        raise ValueError("请发送有效的 JSON 请求")
     return payload
 
 
@@ -22,7 +22,7 @@ def index():
 
 @bp.get("/api/health")
 def health():
-    return jsonify({"status": "ok", "application": "EverContact"})
+    return jsonify({"status": "ok", "application": "拾光通讯录"})
 
 
 @bp.get("/api/contacts")
@@ -45,7 +45,7 @@ def contacts_create():
 def contacts_detail(contact_id):
     contact = repository.get_contact(contact_id)
     if contact is None:
-        return jsonify({"error": "Contact not found"}), 404
+        return jsonify({"error": "联系人不存在"}), 404
     return jsonify(contact)
 
 
@@ -57,7 +57,7 @@ def contacts_update(contact_id):
         return jsonify({"error": str(error)}), 400
     contact = repository.update_contact(contact_id, data)
     if contact is None:
-        return jsonify({"error": "Contact not found"}), 404
+        return jsonify({"error": "联系人不存在"}), 404
     return jsonify(contact)
 
 
@@ -66,17 +66,17 @@ def contacts_favorite(contact_id):
     payload = request.get_json(silent=True) or {}
     favorite = payload.get("favorite") if "favorite" in payload else None
     if favorite is not None and not isinstance(favorite, bool):
-        return jsonify({"error": "Favorite must be a boolean value"}), 400
+        return jsonify({"error": "favorite 必须是布尔值"}), 400
     contact = repository.set_favorite(contact_id, favorite)
     if contact is None:
-        return jsonify({"error": "Contact not found"}), 404
+        return jsonify({"error": "联系人不存在"}), 404
     return jsonify(contact)
 
 
 @bp.delete("/api/contacts/<int:contact_id>")
 def contacts_delete(contact_id):
     if not repository.delete_contact(contact_id):
-        return jsonify({"error": "Contact not found"}), 404
+        return jsonify({"error": "联系人不存在"}), 404
     return "", 204
 
 
@@ -86,7 +86,7 @@ def contacts_export():
     return send_file(
         stream,
         as_attachment=True,
-        download_name="EverContact.xlsx",
+        download_name="拾光通讯录.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
@@ -96,7 +96,7 @@ def contacts_template():
     return send_file(
         template_workbook(),
         as_attachment=True,
-        download_name="contact_import_template.xlsx",
+        download_name="通讯录导入模板.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
@@ -105,17 +105,17 @@ def contacts_template():
 def contacts_import():
     upload = request.files.get("file")
     if upload is None or not upload.filename:
-        return jsonify({"error": "Please select an Excel file to import"}), 400
+        return jsonify({"error": "请选择要导入的 Excel 文件"}), 400
     if not upload.filename.lower().endswith(".xlsx"):
-        return jsonify({"error": "Only .xlsx files are supported; .xls and CSV files are not accepted"}), 400
+        return jsonify({"error": "仅支持 .xlsx 格式，不支持 .xls 或 CSV"}), 400
     try:
         records, errors = parse_workbook(upload.stream)
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     if errors:
-        return jsonify({"error": "Import cancelled. No data was written", "details": errors}), 400
+        return jsonify({"error": "导入已取消，未写入任何数据", "details": errors}), 400
     if not records:
-        return jsonify({"error": "The workbook contains no contacts to import"}), 400
+        return jsonify({"error": "工作簿中没有可导入的联系人"}), 400
     result = repository.import_contacts(records)
     result["stats"] = repository.stats()
     return jsonify(result)
@@ -123,4 +123,4 @@ def contacts_import():
 
 @bp.app_errorhandler(413)
 def file_too_large(_error):
-    return jsonify({"error": "The file exceeds the 5 MiB size limit"}), 413
+    return jsonify({"error": "文件超过 5 MiB 大小限制"}), 413
