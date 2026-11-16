@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="An Extreme Programming address book with favorites, multiple contact methods, and Excel import/export">
-  <title>EverContact · Every connection, within reach</title>
+  <meta name="description" content="支持收藏、多联系方式、Excel 导入导出与回收站的极限编程通讯录作业">
+  <title>拾光通讯录 · 让每一次联系都有迹可循</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -23,61 +23,100 @@
     <symbol id="i-note" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-check-square" viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-restore" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/></symbol>
   </svg>
 
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="/" aria-label="EverContact home">
-        <span class="brand-mark">E</span>
-        <span><strong>EverContact</strong><small>ADDRESS BOOK</small></span>
+      <a class="brand" href="/" aria-label="拾光通讯录首页">
+        <span class="brand-mark">拾</span>
+        <span><strong>拾光</strong><small>ADDRESS BOOK</small></span>
       </a>
-      <div class="sidebar-section-label">MY ADDRESS BOOK</div>
-      <nav class="main-nav" aria-label="Contact filters">
+      <div class="sidebar-section-label">我的通讯录</div>
+      <nav class="main-nav" aria-label="联系人筛选">
         <button class="nav-item active" id="nav-all" type="button">
-          <svg><use href="#i-contacts"/></svg><span>All Contacts</span><span class="nav-count" id="total-count">0</span>
+          <svg><use href="#i-contacts"/></svg><span>全部联系人</span><span class="nav-count" id="total-count">0</span>
         </button>
         <button class="nav-item" id="nav-favorites" type="button">
-          <svg><use href="#i-star"/></svg><span>Starred Contacts</span><span class="nav-count" id="favorite-count">0</span>
+          <svg><use href="#i-star"/></svg><span>星标联系人</span><span class="nav-count" id="favorite-count">0</span>
+        </button>
+        <button class="nav-item" id="nav-trash" type="button">
+          <svg><use href="#i-trash"/></svg><span>回收站</span><span class="nav-count" id="trash-count">0</span>
         </button>
       </nav>
-      <div class="sidebar-section-label">DATA MANAGEMENT</div>
-      <nav class="main-nav" aria-label="Data management">
-        <button class="nav-item" id="import-button" type="button"><svg><use href="#i-upload"/></svg><span>Import Excel</span></button>
-        <a class="nav-item" href="/api/contacts/export" id="export-button"><svg><use href="#i-download"/></svg><span>Export Excel</span></a>
+      <div class="sidebar-section-label">数据管理</div>
+      <nav class="main-nav" aria-label="数据管理">
+        <button class="nav-item" id="import-button" type="button"><svg><use href="#i-upload"/></svg><span>导入 Excel</span></button>
+        <a class="nav-item" href="/api/contacts/export" id="export-button" download><svg><use href="#i-download"/></svg><span>导出当前列表</span></a>
       </nav>
       <div class="sidebar-note">
         <span class="note-dot"></span>
-        <p>Keep the people who matter<br>within easy reach.</p>
+        <p>把重要的人，<br>安放在触手可及的地方。</p>
       </div>
-      <footer class="sidebar-footer">XP ADDRESS BOOK · v1.0.0</footer>
+      <footer class="sidebar-footer">XP 地址簿 · v1.2.0</footer>
     </aside>
 
     <main class="main-content">
       <header class="topbar">
         <div>
           <p class="eyebrow">MY PERSONAL NETWORK</p>
-          <h1 id="page-title">All Contacts</h1>
+          <h1 id="page-title">全部联系人</h1>
         </div>
-        <button class="button button-primary" id="new-contact-button" type="button"><svg><use href="#i-plus"/></svg>New Contact</button>
+        <div class="topbar-actions">
+          <button class="button button-secondary" id="empty-trash-button" type="button" hidden><svg><use href="#i-trash"/></svg>清空回收站</button>
+          <button class="button button-secondary" id="bulk-toggle-button" type="button"><svg><use href="#i-check-square"/></svg>批量管理</button>
+          <button class="button button-primary" id="new-contact-button" type="button"><svg><use href="#i-plus"/></svg>新建联系人</button>
+        </div>
       </header>
-      <section class="toolbar" aria-label="Search and statistics">
+
+      <section class="toolbar" aria-label="搜索与排序">
         <label class="search-box">
           <svg><use href="#i-search"/></svg>
-          <input id="search-input" type="search" placeholder="Search names, numbers, emails, or notes..." autocomplete="off">
+          <input id="search-input" type="search" placeholder="搜索姓名、号码、邮箱、标签或备注…" autocomplete="off">
           <kbd>Ctrl K</kbd>
         </label>
-        <span class="result-summary" id="result-summary">Loading...</span>
+        <label class="sort-box" title="排序方式">
+          <svg><use href="#i-sort"/></svg>
+          <select id="sort-select" aria-label="排序方式">
+            <option value="favorite">星标优先</option>
+            <option value="name">姓名 A→Z</option>
+            <option value="recent">最近更新</option>
+            <option value="created">最近创建</option>
+          </select>
+        </label>
+        <span class="result-summary" id="result-summary">正在载入…</span>
       </section>
 
+      <div class="bulk-bar" id="bulk-bar" hidden>
+        <label class="bulk-check"><input type="checkbox" id="select-all"><span>全选</span></label>
+        <span class="bulk-count" id="bulk-count">已选 0 位</span>
+        <div class="bulk-actions">
+          <button class="text-button" type="button" data-bulk="favorite"><svg><use href="#i-star"/></svg>收藏</button>
+          <button class="text-button" type="button" data-bulk="unfavorite"><svg><use href="#i-star"/></svg>取消收藏</button>
+          <button class="text-button danger" type="button" data-bulk="delete"><svg><use href="#i-trash"/></svg>移入回收站</button>
+          <button class="text-button" type="button" data-bulk="restore" hidden><svg><use href="#i-restore"/></svg>恢复</button>
+          <button class="text-button danger" type="button" data-bulk="purge" hidden><svg><use href="#i-trash"/></svg>彻底删除</button>
+          <button class="button button-secondary" id="bulk-exit-button" type="button">退出批量</button>
+        </div>
+      </div>
+
       <div class="workspace">
-        <section class="contact-list" id="contact-list" aria-label="Contact list" aria-live="polite"></section>
-        <aside class="detail-panel" id="detail-panel" aria-label="Contact details">
+        <section class="contact-list" id="contact-list" aria-label="联系人列表" aria-live="polite"></section>
+        <aside class="detail-panel" id="detail-panel" aria-label="联系人详情">
           <div class="detail-placeholder">
             <div class="placeholder-illustration"><svg><use href="#i-contacts"/></svg></div>
-            <h2>Select a contact</h2>
-            <p>View all contact methods and notes</p>
+            <h2>选择一个联系人</h2>
+            <p>查看完整联系方式与备注</p>
           </div>
         </aside>
+      </div>
+      <div class="list-footer">
+        <button class="button button-secondary" id="load-more-button" type="button" hidden>加载更多</button>
+        <span id="list-hint"></span>
       </div>
     </main>
   </div>
@@ -85,33 +124,43 @@
   <dialog class="modal" id="contact-dialog" aria-labelledby="contact-dialog-title">
     <form id="contact-form">
       <div class="modal-header">
-        <div><p class="eyebrow">CONTACT DETAILS</p><h2 id="contact-dialog-title">New Contact</h2></div>
-        <button class="icon-button" type="button" data-close="contact-dialog" aria-label="Close"><svg><use href="#i-close"/></svg></button>
+        <div><p class="eyebrow">CONTACT DETAILS</p><h2 id="contact-dialog-title">新建联系人</h2></div>
+        <button class="icon-button" type="button" data-close="contact-dialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="contact-id">
         <div class="form-row form-row-name">
-          <label class="field"><span>Full Name <b>*</b></span><input id="contact-name" name="name" maxlength="80" required placeholder="e.g. Alice Morgan"></label>
-          <label class="favorite-toggle"><input id="contact-favorite" type="checkbox"><span><svg><use href="#i-star"/></svg>Mark as Favorite</span></label>
+          <label class="field"><span>姓名 <b>*</b></span><input id="contact-name" name="name" maxlength="80" required placeholder="例如：林小满"></label>
+          <label class="favorite-toggle"><input id="contact-favorite" type="checkbox"><span><svg><use href="#i-star"/></svg>设为星标</span></label>
         </div>
-        <div class="methods-heading"><span>Contact Methods</span><button class="text-button" id="add-method-button" type="button"><svg><use href="#i-plus"/></svg>Add Method</button></div>
+        <div class="methods-heading"><span>联系方式 <small>每条可填写独立标签，如工作、个人；最多 30 条</small></span><button class="text-button" id="add-method-button" type="button"><svg><use href="#i-plus"/></svg>添加一条</button></div>
         <div id="method-editor" class="method-editor"></div>
-        <label class="field notes-field"><span>Notes</span><textarea id="contact-notes" maxlength="500" rows="3" placeholder="Add a story, reminder, or any important detail..."></textarea></label>
+        <label class="field notes-field"><span>备注</span><textarea id="contact-notes" maxlength="500" rows="3" placeholder="记录你们相识的故事，或任何重要信息…"></textarea></label>
       </div>
-      <div class="modal-footer"><button class="button button-secondary" type="button" data-close="contact-dialog">Cancel</button><button class="button button-primary" id="save-contact-button" type="submit"><svg><use href="#i-check"/></svg>Save Contact</button></div>
+      <div class="modal-footer"><button class="button button-secondary" type="button" data-close="contact-dialog">取消</button><button class="button button-primary" id="save-contact-button" type="submit"><svg><use href="#i-check"/></svg>保存联系人</button></div>
     </form>
   </dialog>
 
   <dialog class="modal import-modal" id="import-dialog" aria-labelledby="import-title">
     <form id="import-form">
-      <div class="modal-header"><div><p class="eyebrow">EXCEL IMPORT</p><h2 id="import-title">Import from Excel</h2></div><button class="icon-button" type="button" data-close="import-dialog" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+      <div class="modal-header"><div><p class="eyebrow">EXCEL IMPORT</p><h2 id="import-title">从 Excel 导入</h2></div><button class="icon-button" type="button" data-close="import-dialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div>
       <div class="modal-body">
-        <div class="import-steps"><span><b>1</b>Download Template</span><i></i><span><b>2</b>Add Contacts</span><i></i><span><b>3</b>Upload File</span></div>
-        <a class="template-link" href="/api/contacts/template"><svg><use href="#i-download"/></svg>Download standard import template (.xlsx)</a>
-        <label class="file-drop" id="file-drop"><input id="excel-file" type="file" accept=".xlsx" required><svg><use href="#i-upload"/></svg><strong id="file-label">Click to select an Excel file</strong><span>Only .xlsx files, up to 5 MiB</span></label>
-        <div class="import-rules"><strong>Import Guidelines</strong><ul><li>Name is required. Separate multiple values of the same type with semicolons (;).</li><li>Contacts with duplicate names will be skipped; existing records will not be overwritten.</li><li>If any row contains an error, the entire import will be cancelled to prevent partial data.</li></ul></div>
+        <div class="import-steps"><span><b>1</b>下载模板</span><i></i><span><b>2</b>填写联系人</span><i></i><span><b>3</b>预览并导入</span></div>
+        <a class="template-link" href="/api/contacts/template"><svg><use href="#i-download"/></svg>下载标准导入模板.xlsx</a>
+        <label class="file-drop" id="file-drop"><input id="excel-file" type="file" accept=".xlsx" required><svg><use href="#i-upload"/></svg><strong id="file-label">点击选择 Excel 文件</strong><span>仅支持 .xlsx，最大 5 MiB</span></label>
+        <fieldset class="import-mode">
+          <legend>同名联系人处理方式</legend>
+          <label><input type="radio" name="import-mode" value="skip" checked><span>跳过同名（推荐，不修改现有数据）</span></label>
+          <label><input type="radio" name="import-mode" value="overwrite"><span>覆盖同名（用文件内容替换其联系方式与备注）</span></label>
+        </fieldset>
+        <div class="import-rules"><strong>导入说明</strong><ul><li>姓名必填，多个同类号码用中文分号“；”分隔。</li><li>建议先点“预览”确认新增/覆盖/跳过的数量。</li><li>任一行存在错误时整批取消，避免不完整导入。</li></ul></div>
+        <div class="import-preview" id="import-preview" hidden></div>
       </div>
-      <div class="modal-footer"><button class="button button-secondary" type="button" data-close="import-dialog">Cancel</button><button class="button button-primary" id="confirm-import-button" type="submit"><svg><use href="#i-upload"/></svg>Start Import</button></div>
+      <div class="modal-footer">
+        <button class="button button-secondary" type="button" id="preview-import-button">预览</button>
+        <button class="button button-secondary" type="button" data-close="import-dialog">取消</button>
+        <button class="button button-primary" id="confirm-import-button" type="submit"><svg><use href="#i-upload"/></svg>开始导入</button>
+      </div>
     </form>
   </dialog>
 
