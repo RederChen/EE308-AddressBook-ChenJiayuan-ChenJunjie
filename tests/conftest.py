@@ -17,13 +17,13 @@ def client(app):
 @pytest.fixture()
 def contact_payload():
     return {
-        "name": "Alice Morgan",
+        "name": "林小满",
         "favorite": True,
-        "notes": "Project team member",
+        "notes": "项目组同学",
         "methods": [
-            {"kind": "mobile", "value": "13800000000", "label": "Work"},
-            {"kind": "mobile", "value": "13900000000", "label": "Personal"},
-            {"kind": "email", "value": "alice@example.com", "label": ""},
-            {"kind": "address", "value": "Fuzhou, Fujian, China", "label": ""},
+            {"kind": "mobile", "value": "13800000000", "label": "工作"},
+            {"kind": "mobile", "value": "13900000000", "label": "个人"},
+            {"kind": "email", "value": "xiaoman@example.com", "label": ""},
+            {"kind": "address", "value": "福建省福州市", "label": ""},
         ],
     }

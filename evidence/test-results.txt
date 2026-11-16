@@ -1,0 +1,9 @@
+Command: python -m pytest
+Date: 2026-11-15
+Final regression: .................                                              [100%]
+17 passed in 1.62s
+
+Additional checks:
+- Python compileall: passed
+- node --check addressbook/static/app.js: passed
+- GET /api/health on running local service: {"application":"拾光通讯录","status":"ok"}
