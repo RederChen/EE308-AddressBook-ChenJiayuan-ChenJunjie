@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An Extreme Programming address book with favorites, multiple contact methods, and Excel import/export">
+  <title>EverContact · Every connection, within reach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-contacts" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.7 2.85 5.78 6.38.93-4.62 4.5 1.09 6.36L12 17.27l-5.7 3 1.09-6.36-4.62-4.5 6.38-.93L12 2.7Z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m0 0L7 8m5-5 5 5M4 15v5h16v-5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m0 0 5-5m-5 5-5-5M4 20h16"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V3h8v3m3 0-1 15H6L5 6m5 4v7m4-7v7"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.69 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.56 2.81.69A2 2 0 0 1 22 16.92Z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="EverContact home">
+        <span class="brand-mark">E</span>
+        <span><strong>EverContact</strong><small>ADDRESS BOOK</small></span>
+      </a>
+      <div class="sidebar-section-label">MY ADDRESS BOOK</div>
+      <nav class="main-nav" aria-label="Contact filters">
+        <button class="nav-item active" id="nav-all" type="button">
+          <svg><use href="#i-contacts"/></svg><span>All Contacts</span><span class="nav-count" id="total-count">0</span>
+        </button>
+        <button class="nav-item" id="nav-favorites" type="button">
+          <svg><use href="#i-star"/></svg><span>Starred Contacts</span><span class="nav-count" id="favorite-count">0</span>
+        </button>
+      </nav>
+      <div class="sidebar-section-label">DATA MANAGEMENT</div>
+      <nav class="main-nav" aria-label="Data management">
+        <button class="nav-item" id="import-button" type="button"><svg><use href="#i-upload"/></svg><span>Import Excel</span></button>
+        <a class="nav-item" href="/api/contacts/export" id="export-button"><svg><use href="#i-download"/></svg><span>Export Excel</span></a>
+      </nav>
+      <div class="sidebar-note">
+        <span class="note-dot"></span>
+        <p>Keep the people who matter<br>within easy reach.</p>
+      </div>
+      <footer class="sidebar-footer">XP ADDRESS BOOK · v1.0.0</footer>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MY PERSONAL NETWORK</p>
+          <h1 id="page-title">All Contacts</h1>
+        </div>
+        <button class="button button-primary" id="new-contact-button" type="button"><svg><use href="#i-plus"/></svg>New Contact</button>
+      </header>
+      <section class="toolbar" aria-label="Search and statistics">
+        <label class="search-box">
+          <svg><use href="#i-search"/></svg>
+          <input id="search-input" type="search" placeholder="Search names, numbers, emails, or notes..." autocomplete="off">
+          <kbd>Ctrl K</kbd>
+        </label>
+        <span class="result-summary" id="result-summary">Loading...</span>
+      </section>
+
+      <div class="workspace">
+        <section class="contact-list" id="contact-list" aria-label="Contact list" aria-live="polite"></section>
+        <aside class="detail-panel" id="detail-panel" aria-label="Contact details">
+          <div class="detail-placeholder">
+            <div class="placeholder-illustration"><svg><use href="#i-contacts"/></svg></div>
+            <h2>Select a contact</h2>
+            <p>View all contact methods and notes</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="modal" id="contact-dialog" aria-labelledby="contact-dialog-title">
+    <form id="contact-form">
+      <div class="modal-header">
+        <div><p class="eyebrow">CONTACT DETAILS</p><h2 id="contact-dialog-title">New Contact</h2></div>
+        <button class="icon-button" type="button" data-close="contact-dialog" aria-label="Close"><svg><use href="#i-close"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="contact-id">
+        <div class="form-row form-row-name">
+          <label class="field"><span>Full Name <b>*</b></span><input id="contact-name" name="name" maxlength="80" required placeholder="e.g. Alice Morgan"></label>
+          <label class="favorite-toggle"><input id="contact-favorite" type="checkbox"><span><svg><use href="#i-star"/></svg>Mark as Favorite</span></label>
+        </div>
+        <div class="methods-heading"><span>Contact Methods</span><button class="text-button" id="add-method-button" type="button"><svg><use href="#i-plus"/></svg>Add Method</button></div>
+        <div id="method-editor" class="method-editor"></div>
+        <label class="field notes-field"><span>Notes</span><textarea id="contact-notes" maxlength="500" rows="3" placeholder="Add a story, reminder, or any important detail..."></textarea></label>
+      </div>
+      <div class="modal-footer"><button class="button button-secondary" type="button" data-close="contact-dialog">Cancel</button><button class="button button-primary" id="save-contact-button" type="submit"><svg><use href="#i-check"/></svg>Save Contact</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="modal import-modal" id="import-dialog" aria-labelledby="import-title">
+    <form id="import-form">
+      <div class="modal-header"><div><p class="eyebrow">EXCEL IMPORT</p><h2 id="import-title">Import from Excel</h2></div><button class="icon-button" type="button" data-close="import-dialog" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+      <div class="modal-body">
+        <div class="import-steps"><span><b>1</b>Download Template</span><i></i><span><b>2</b>Add Contacts</span><i></i><span><b>3</b>Upload File</span></div>
+        <a class="template-link" href="/api/contacts/template"><svg><use href="#i-download"/></svg>Download standard import template (.xlsx)</a>
+        <label class="file-drop" id="file-drop"><input id="excel-file" type="file" accept=".xlsx" required><svg><use href="#i-upload"/></svg><strong id="file-label">Click to select an Excel file</strong><span>Only .xlsx files, up to 5 MiB</span></label>
+        <div class="import-rules"><strong>Import Guidelines</strong><ul><li>Name is required. Separate multiple values of the same type with semicolons (;).</li><li>Contacts with duplicate names will be skipped; existing records will not be overwritten.</li><li>If any row contains an error, the entire import will be cancelled to prevent partial data.</li></ul></div>
+      </div>
+      <div class="modal-footer"><button class="button button-secondary" type="button" data-close="import-dialog">Cancel</button><button class="button button-primary" id="confirm-import-button" type="submit"><svg><use href="#i-upload"/></svg>Start Import</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>
